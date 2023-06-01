@@ -41,6 +41,7 @@ DESTDIR ?=
 .PHONY: faust install uninstall osc http package wasmglue
 
 MAKE ?= make
+CMAKE ?= $(shell which cmake)
 
 WORKLET ?= no
 WORKLETOPT = "-DWORKLET=off"
@@ -305,13 +306,13 @@ wasmlib: $(FAUSTDIR) $(FAUSTDIR)/Makefile
 	@$(MAKE) checkemcc
 	mkdir -p $(WASMFS)/$(WASMLIBDIR) && cp ../libraries/*.lib ../libraries/old/*.lib $(WASMFS)/$(WASMLIBDIR)
 	mkdir -p $(WASMFS)/rsrc && cp ../architecture/webaudio/mixer32.wasm $(WASMFS)/rsrc && cp ../architecture/webaudio/mixer64.wasm $(WASMFS)/rsrc
-	cmake --build $(FAUSTDIR) --target wasmlib $(BUILDOPT) -- $(JOBS)
+	$(CMAKE) --build $(FAUSTDIR) --target wasmlib $(BUILDOPT) -- $(JOBS)
 	cp $(FAUSTDIR)/emcc/libfaust-wasm.* lib
 	rm -rf $(WASMFS)
 
 wasmglue: $(FAUSTDIR) $(FAUSTDIR)/Makefile
 	@$(MAKE) checkemcc
-	cmake --build $(FAUSTDIR) --target wasmglue $(BUILDOPT) -- $(JOBS)
+	$(CMAKE) --build $(FAUSTDIR) --target wasmglue $(BUILDOPT) -- $(JOBS)
 
 checkemcc:
 	@which $(EMCC) > /dev/null || (echo "### emcc must be available from your PATH."; false;)
