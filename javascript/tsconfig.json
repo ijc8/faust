@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "module": "system",
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "target": "es2015",
+    "sourceMap": false,
+    "out": "npm/FaustLibrary.js",
+    "noUnusedLocals": false,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "noUnusedParameters": false,
+    "pretty": true,
+    "noFallthroughCasesInSwitch": true,
+    "allowUnreachableCode": false,
+    "downlevelIteration": true,
+    "allowJs" : true
+  },
+  "include": [
+    "src/*.ts",
+    "node_modules/js-sha256/src/sha256.js"
+  ],
+  "exclude": [
+  	"npm",
+  	"tmp",
+  	"tests"
+  ]
+}

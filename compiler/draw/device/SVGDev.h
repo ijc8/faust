@@ -19,14 +19,34 @@
  ************************************************************************
  ************************************************************************/
 
-// SVGDev.h
-
 #if !defined SVGDEV_H
 #define SVGDEV_H
 
+#include <iostream>
+#include <fstream>
+
 #include "device.h"
 
+#ifdef EMCC
+#define JSLINKSTATUS true
+#else
+#define JSLINKSTATUS false
+#endif
+
 class SVGDev : public device {
+   private:
+	std::ofstream fOutStream;
+	bool fJSLink = JSLINKSTATUS;		// a flag to use js for links (i.e. function call) instead of xlink:href
+	std::string fCurrentPath;			// the path of the current svg folder 
+	std::string getJSLink(const char* link) const;
+
+	inline std::ostream& outstream() 	{ return fOutStream; }
+	
+	std::string startlink(const char* link);
+	void		endlink(const char* link);
+	const char*	rectColor2Style(const std::string color) const;
+	std::string	getStyle(const std::string& file) const;
+
    public:
     SVGDev(const char*, double, double);
     ~SVGDev();

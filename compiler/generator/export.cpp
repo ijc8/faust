@@ -72,6 +72,8 @@ extern "C" LIBFAUST_API const char* getErrorAfterException()
 
 extern "C" LIBFAUST_API void cleanupAfterException()
 {
+    free((void*)faustexception::gJSExceptionMsg);
+    faustexception::gJSExceptionMsg = nullptr;
     global::destroy();
 }
 

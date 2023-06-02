@@ -24,7 +24,6 @@
 #include "exception.hh"
 #include "floats.hh"
 #include "global.hh"
-#include "rn_base64.h"
 
 using namespace std;
 
@@ -51,6 +50,10 @@ using namespace std;
  (gLoopVarInBytes)
  - offset of inputs/outputs are constant, so can be directly generated
 
+ Code generation, the flags can be:
+    - 'wasm-i' (internal memory for monophonic DSP)
+    - 'wasm-e' (external memory for polyphonic DSP)
+    - or 'wasm' which is equivalent to 'wasm-i'
 */
 
 dsp_factory_base* WASMCodeContainer::produceFactory()
@@ -338,75 +341,17 @@ void WASMCodeContainer::produceClass()
         // must be computed taking account JSON size and DSP + audio buffer size
         fBinaryOut.writeAt(begin_memory, U32LEB(memory_size));
         // maximum memory pages number, minimum value is to be extended on JS side for soundfiles
-        fBinaryOut.writeAt(begin_memory + 5, U32LEB(memory_size+1000));
+        fBinaryOut.writeAt(begin_memory + 5, U32LEB(memory_size + 1000));
     }
 
-    // Data segment contains the JSON string starting at offset 0,
+    // Data segment contains the JSON string starting at offset 0
     gGlobal->gWASMVisitor->generateJSON(json);
 
     // Finally produce output stream
     fBinaryOut.writeTo(*fOut);
 
-    // Helper code
-    int n = 0;
-
-    // Generate JSON and getSize
-    tab(n, fHelper);
-    fHelper << "/*\n"
-            << "Code generated with Faust version " << FAUSTVERSION << endl;
-    fHelper << "Compilation options: ";
-    gGlobal->printCompilationOptions(fHelper);
-    fHelper << "\n*/\n";
-
-    // Generate JSON
-    tab(n, fHelper);
-    string json2 = flattenJSON1(json);
-    fHelper << "function getJSON" << fKlassName << "() {";
-    tab(n + 1, fHelper);
-    fHelper << "return '";
-    fHelper << json2;
-    fHelper << "';";
-    printlines(n + 1, fUICode, fHelper);
-    tab(n, fHelper);
-    fHelper << "}\n";
-
-    if (gGlobal->gOutputLang == "wasm-ib" || gGlobal->gOutputLang == "wasm-eb") {
-        /*
-        // Write binary as an array
-        fHelper << showbase         // show the 0x prefix
-                << internal         // fill between the prefix and the number
-                << setfill('0');    // fill with 0s
-        {
-            fHelper << "function getBinaryCode" << fKlassName << "() {";
-                tab(n+1, fHelper);
-                fHelper << "return new Uint8Array([";
-                char sep = ' ';
-                for (int i = 0; i < fBinaryOut.size(); i++) {
-                    fHelper << sep << hex << int(fBinaryOut[i]);
-                    sep = ',';
-                }
-                fHelper << "]).buffer; }\n";
-            tab(n, fHelper);
-        }
-
-        {
-            fHelper << "function getBinaryCodeString" << fKlassName << "() {";
-                tab(n+1, fHelper);
-                fHelper << "return \"new Uint8Array([";
-                char sep = ' ';
-                for (int i = 0; i < fBinaryOut.size(); i++) {
-                    fHelper << sep << hex << int(fBinaryOut[i]);
-                    sep = ',';
-                }
-                fHelper << "]).buffer\"; }\n";
-            tab(n, fHelper);
-        }
-        */
-
-        fHelper << "function getBase64Code" << fKlassName << "() {";
-        fHelper << " return \"" << base64_encode(fBinaryOut.toString()) << "\"; }\n";
-        tab(n, fHelper);
-    }
+    // Helper code: remove problematic characters for the JS side
+    fHelper << flattenJSON1(json);
 }
 
 // Auxiliary function for shared code in generateCompute

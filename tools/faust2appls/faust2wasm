@@ -17,7 +17,7 @@ COMB_WRAPPED=
 COMB_WRAPPED_FILES=
 COMB_SEP=
 WASM=
-WORKLET="false"
+WORKLET="true"
 EFFECT=""
 WAP="0"
 NPM="false"
@@ -39,7 +39,7 @@ echoHelp()
     option "-effect <effect.dsp>"
     option "-effect auto"
     option -opt "optimize the wasm module using Binaryen tools (https://github.com/WebAssembly/binaryen)"
-    option -worklet "generates AudioWorklet compatible code"
+    option -worklet "generates AudioWorklet compatible code (default = true)"
     option -wap "generates a WAP (Web Audio Plugin). This forces -worklet mode, and create additional files"
     option -wap2 "generates a WAP V2 (Web Audio Plugin). This forces -worklet mode, and create additional files"
     option -comb "combine several DSPs in a unique resulting 'comb.js' file, sharing the same Emscripten runtime"
@@ -115,14 +115,14 @@ if [ $POLY = true ]; then
         JS_WRAPPER=webaudio-wasm-poly-emcc.js
     else
         if [ $WORKLET = "true" ]; then
-            WASM="wasm-eb"
+            WASM="wasm-e"
             echo "Compiled with 'wasm' backend in polyphonic and AudioWorklet mode"
-            CODE_WRAPPER1=webaudio-workletprocessor-poly-standalone-wrapper.js
-            CODE_WRAPPER2=webaudio-workletnode-poly-standalone-wrapper.js
+            CODE_WRAPPER1=faustwasm-poly-footer.js
         else
             echo "Compiled with 'wasm' backend in polyphonic mode"
-            CODE_WRAPPER1=webaudio-wasm-poly-standalone-wrapper.js
+            CODE_WRAPPER1=faustwasm-poly-footer.js
         fi
+        cp $FAUSTARCH/webaudio/mixer32.wasm $FAUSTARCH/webaudio/mixer64.wasm .
     fi
 else
     WASM="wasm"
@@ -132,13 +132,12 @@ else
         JS_WRAPPER=webaudio-wasm-emcc.js
     else
         if [ $WORKLET = "true" ]; then
-            WASM="wasm-ib"
+            WASM="wasm-i"
             echo "Compiled with 'wasm' backend in AudioWorklet mode"
-            CODE_WRAPPER1=webaudio-workletprocessor-standalone-wrapper.js
-            CODE_WRAPPER2=webaudio-workletnode-standalone-wrapper.js
+            CODE_WRAPPER1=faustwasm-footer.js
         else
             echo "Compiled with 'wasm' backend"
-            CODE_WRAPPER1=webaudio-wasm-standalone-wrapper.js
+            CODE_WRAPPER1=faustwasm-footer.js
         fi
     fi
 fi
@@ -202,26 +201,18 @@ EndOfCode
         rm $name.cpp
     else
 
-        if [ "$EFFECT" != "" ]; then
-            cat $name"_effect".js >> $name.js
-            rm $name"_effect".js
-        fi
+        # Done in SP and AWN cases
+        sed -e "s/DSP/"$name"/g" $FAUSTARCH/webaudio/$CODE_WRAPPER1 > $name.js
 
-        if [ $WORKLET = "true" ]; then
-            cp $name.js $name-processor.js
-            sed -e "s/mydsp/"$name"/g" $FAUSTARCH/webaudio/$CODE_WRAPPER1 >> $name-processor.js
+        if [ $WORKLET = "true" ]; then        
             if [ $WAP = "2" ]; then
-                sed -e "s/class\ mydsp\ /"export\ default\ class\ $name\ "/g" $FAUSTARCH/webaudio/$CODE_WRAPPER2 > $name_tmp1.js
-                sed -e "s/mydsp/"$name"/g" $name_tmp1.js >> $name.js
-            else
-                sed -e "s/mydsp/"$name"/g" $FAUSTARCH/webaudio/$CODE_WRAPPER2 >> $name.js
+            	sed -e "s/class\ mydsp\ /"export\ default\ class\ $name\ "/g" $FAUSTARCH/webaudio/$CODE_WRAPPER2 > $name_tmp1.js
+            	sed -e "s/mydsp/"$name"/g" $name_tmp1.js >> $name.js
             fi
         else
             if [ $WAP = "2" ]; then
-                sed -e "s/class\ mydsp\ /"export\ default\ class\ $name\ "/g" $FAUSTARCH/webaudio/$CODE_WRAPPER1 > $name_tmp1.js
-                sed -e "s/mydsp/"$name"/g" $name_tmp1.js >> $name.js
-            else
-                sed -e "s/mydsp/"$name"/g" $FAUSTARCH/webaudio/$CODE_WRAPPER1 >> $name.js
+            	sed -e "s/class\ mydsp\ /"export\ default\ class\ $name\ "/g" $FAUSTARCH/webaudio/$CODE_WRAPPER1 > $name_tmp1.js
+            	sed -e "s/mydsp/"$name"/g" $name_tmp1.js >> $name.js
             fi
         fi
     fi
@@ -258,16 +249,16 @@ EndOfCode
 
     # collect binary file name
     if [ $WORKLET = "true" ]; then
-        rm -f $name"_effect".wasm test$name-tmp1.html test$name-tmp2.html
-        if [ $WAP = "1" ] || [ $WAP = "2" ]; then
-            mv $name.js main.js
-            mv test$name.html index.html
-            BINARIES="$BINARIES main.js, $name.wasm, main.json, index.html"
+    	rm -f test$name-tmp1.html test$name-tmp2.html
+    	if [ $WAP = "1" ] || [ $WAP = "2" ]; then
+    		mv $name.js main.js
+    		mv test$name.html index.html
+        	BINARIES="$BINARIES main.js, main.json, $name.wasm, $name.json, index.html"
         else
-            BINARIES="$BINARIES$name.js, $name-processor.js, $name.wasm"
+        	BINARIES="$BINARIES$name.js, $name.wasm, $name.json"
         fi
     else
-        BINARIES="$BINARIES$name.js, $name.wasm"
+        BINARIES="$BINARIES$name.js, $name.wasm, $name.json"
     fi
 
     if [ "$NPM" = "true" ]; then

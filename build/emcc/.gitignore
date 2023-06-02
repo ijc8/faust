@@ -1,0 +1,5 @@
+libfaust-wasm.*
+FaustLibrary.js
+npm/dist
+old
+

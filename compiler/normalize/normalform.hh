@@ -30,4 +30,6 @@ LIBFAUST_API tvec simplifyToNormalForm2(tvec sig);
 
 LIBFAUST_API void printSignal(Tree sig, std::ostream& out, bool shared);
 
+extern "C" EXPORT const char* getCLibFaustVersion();
+
 #endif

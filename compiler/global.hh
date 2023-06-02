@@ -170,7 +170,7 @@ struct global {
     int  gFTZMode;               // -ftz option, 0 = no (default), 1 = fabs based, 2 = mask based (fastest)
     bool gInPlace;               // -inpl option, add cache to input for correct in-place computations
     bool gStrictSelect;          // -sts option, generate strict code for 'selectX' even for stateless branches (both are computed)
-    
+
     bool gDSPStruct;             // to control method generation in -fun mode
     bool gLightMode;             // -light option, do not generate the entire DSP API (to be used with Emscripten to generate a light DSP module for JavaScript)
     bool gClang;                 // -clang opttion, when compiled with clang/clang++, adds specific #pragma for auto-vectorization
