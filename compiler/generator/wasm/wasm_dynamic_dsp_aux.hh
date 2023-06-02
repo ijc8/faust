@@ -70,9 +70,9 @@ LIBFAUST_API wasm_dsp_factory* createWasmCDSPFactoryFromFile2(const char* filena
 
 LIBFAUST_API wasm_dsp_factory* createWasmCDSPFactoryFromString2(const char* name_app, const char* dsp_content, int argc, const char* argv[], char* error_msg, bool internal_memory);
 
-EXPORT void deleteAllWasmCDSPFactories();
+LIBFAUST_API void deleteAllWasmCDSPFactories();
 
-EXPORT bool deleteWasmCDSPFactory(wasm_dsp_factory* factory);
+LIBFAUST_API bool deleteWasmCDSPFactory(wasm_dsp_factory* factory);
 
 LIBFAUST_API bool deleteWasmCDSPFactory(wasm_dsp_factory* factory);
 

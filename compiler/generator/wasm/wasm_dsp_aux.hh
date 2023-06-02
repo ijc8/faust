@@ -263,6 +263,12 @@ struct WasmBinaryReader {
 };
 
 // The C++ side version of compiled wasm code
+/**
+ * Get the library version.
+ *
+ * @return the library version as a static string.
+ */
+extern "C" LIBFAUST_API const char* getCLibFaustVersion();
 
 class SoundUI;
 class MidiUI;
@@ -318,12 +324,9 @@ class LIBFAUST_API wasm_dsp_factory : public dsp_factory, public faust_smartable
     JSONUIDecoderBase*  fDecoder;
     int                 fInstance; // Index of wasm DSP instance
     MapUI               fMapUI;
-   
-/*
 #ifdef EMCC
     SoundUI* fSoundUI;
 #endif
-*/
 
    public:
     wasm_dsp_factory():fFactory(nullptr), fDecoder(nullptr), fInstance(0)

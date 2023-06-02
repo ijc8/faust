@@ -16,7 +16,6 @@
 #include <vector>
 
 #include "libfaust.h"
-#include "export.hh"
 #include "wasm_dynamic_dsp_aux.hh"
 
 struct FaustWasm {

@@ -49,6 +49,10 @@ class WASMCodeContainer : public virtual CodeContainer {
     template <typename REAL>
     std::string generateJSON()
     {
+        // Prepare compilation options
+        std::stringstream compile_options;
+        gGlobal->printCompilationOptions(compile_options);
+
         // JSON generation
         JSONInstVisitor<REAL> json_visitor1;
         generateUserInterface(&json_visitor1);
@@ -62,10 +66,13 @@ class WASMCodeContainer : public virtual CodeContainer {
         }
     
         // "name", "filename" found in metadata
-        string dsp_code = gGlobal->gInputString ? gGlobal->gInputString : pathToContent(gGlobal->gMasterDocument);
-        JSONInstVisitor<REAL> json_visitor2("", "", fNumInputs, fNumOutputs, -1, "", base64_encode(dsp_code), FAUSTVERSION, compile_options.str(),
-        gGlobal->gReader.listLibraryFiles(), gGlobal->gImportDirList,
-        gGlobal->gWASMVisitor->getStructSize(), path_index_table);
+        std::string dsp_code = gGlobal->gInputString.empty() ? pathToContent(gGlobal->gMasterDocument) : gGlobal->gInputString;
+        JSONInstVisitor<REAL> json_visitor2(
+            "", "", fNumInputs, fNumOutputs, -1,
+            "", base64_encode(dsp_code), FAUSTVERSION,
+            compile_options.str(), gGlobal->gReader.listLibraryFiles(),
+            gGlobal->gImportDirList, gGlobal->gWASMVisitor->getStructSize(),
+            path_index_table, MemoryLayoutType());
         generateUserInterface(&json_visitor2);
         generateMetaData(&json_visitor2);
 

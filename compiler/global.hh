@@ -630,15 +630,15 @@ struct global {
     void initDirectories(int argc, const char* argv[]);
     void printDeclareHeader(std::ostream& dst);
     void parseSourceFiles();
-    
-    void printLibDir();
-    void printIncludeDir();
-    void printArchDir();
-    void printDspDir();
-    void printPaths();
-    
+
     void printDirectories();
 };
+
+std::string printLibDir();
+std::string printIncludeDir();
+std::string printArchDir();
+std::string printDspDir();
+std::string printPaths();
 
 // Unique shared global pointer
 extern global* gGlobal;
